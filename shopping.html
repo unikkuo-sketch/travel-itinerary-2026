@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛍️ 必買清單 | 熱海長瀞之旅</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-sticky">
+        <div class="nav-container">
+            <a href="index.html" class="nav-link">🔙 回首頁</a>
+            <span class="nav-link active">🛍️ 購物清單</span>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="section">
+            <div class="section-header">
+                <h2>🛍️ 日本必買購物清單</h2>
+                <p>自動儲存，不怕遺忘的採購筆記</p>
+            </div>
+
+            <div class="shopping-container">
+                <div class="input-group">
+                    <input type="text" id="itemInput" class="shopping-input" placeholder="輸入想買的東西... (例如: EVE止痛藥)">
+                    <button id="addBtn" class="btn-add">加入</button>
+                </div>
+
+                <div class="category-tags" id="quickAddTags">
+                    <!-- JS will populate this -->
+                </div>
+
+                <ul id="shoppingList" class="shopping-list">
+                    <!-- JS will populate this -->
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-wish">🛒 祝您購物愉快，滿載而歸！</p>
+        </div>
+    </footer>
+
+    <script>
+        // Default suggestions
+        const suggestions = [
+            "EVE止痛藥", "合利他命", "Wakamoto", "DHC護唇膏", 
+            "蒸氣眼罩", "休足時間", "熱海布丁", "溫泉饅頭", 
+            "秩父味噌", "秩父錦日本酒"
+        ];
+
+        // Load from LocalStorage
+        let items = JSON.parse(localStorage.getItem('travelShoppingList')) || [];
+
+        // If empty first time, maybe populate default? (Optional, let's keep it clean or use quick tags)
+        
+        const listEl = document.getElementById('shoppingList');
+        const inputEl = document.getElementById('itemInput');
+        const addBtn = document.getElementById('addBtn');
+        const tagsContainer = document.getElementById('quickAddTags');
+
+        // Render Quick Tags
+        suggestions.forEach(item => {
+            const tag = document.createElement('div');
+            tag.className = 'category-tag';
+            tag.textContent = `+ ${item}`;
+            tag.onclick = () => addItem(item);
+            tagsContainer.appendChild(tag);
+        });
+
+        function renderList() {
+            listEl.innerHTML = '';
+            if (items.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">購物車空空的，快去加點東西吧！🛒</div>';
+                return;
+            }
+
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = `shopping-item ${item.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem(${index})">
+                    <span class="item-text">${item.text}</span>
+                    <button class="btn-delete" onclick="deleteItem(${index})">🗑️</button>
+                `;
+                listEl.appendChild(li);
+            });
+            save();
+        }
+
+        function addItem(text) {
+            if (!text) text = inputEl.value.trim();
+            if (text) {
+                items.unshift({ text, completed: false });
+                inputEl.value = '';
+                renderList();
+            }
+        }
+
+        function toggleItem(index) {
+            items[index].completed = !items[index].completed;
+            renderList();
+        }
+
+        function deleteItem(index) {
+            if(confirm('確定要刪除嗎？')) {
+                items.splice(index, 1);
+                renderList();
+            }
+        }
+
+        function save() {
+            localStorage.setItem('travelShoppingList', JSON.stringify(items));
+        }
+
+        addBtn.addEventListener('click', () => addItem());
+        inputEl.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') addItem();
+        });
+
+        // Initial Render
+        renderList();
+    </script>
+</body>
+</html>
